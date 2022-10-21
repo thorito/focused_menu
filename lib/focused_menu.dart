@@ -1,11 +1,33 @@
 library focused_menu;
 
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
-import 'package:focused_menu/modals.dart';
+import 'package:focused_menu_custom/modals.dart';
+
+class FocusedMenuHolderController {
+  late _FocusedMenuHolderState _widgetState;
+  bool isOpened = false;
+
+  void _addState(_FocusedMenuHolderState widgetState) {
+    this._widgetState = widgetState;
+  }
+
+  open() {
+    _widgetState.openMenu(_widgetState.context);
+    isOpened = true;
+  }
+
+  close() {
+    if (isOpened) {
+      Navigator.pop(_widgetState.context);
+      isOpened = false;
+    }
+  }
+}
 
 class FocusedMenuHolder extends StatefulWidget {
-  final Widget child;
+  final FocusedMenuHolderController? controller;
   final double? menuItemExtent;
   final double? menuWidth;
   final List<FocusedMenuItem> menuItems;
@@ -17,37 +39,48 @@ class FocusedMenuHolder extends StatefulWidget {
   final Color? blurBackgroundColor;
   final double? bottomOffsetHeight;
   final double? menuOffset;
-  /// Open with tap insted of long press.
   final bool openWithTap;
+  final bool enableMenuScroll;
+  final Widget child;
 
-  const FocusedMenuHolder(
-      {Key? key,
-      required this.child,
-      required this.onPressed,
-      required this.menuItems,
-      this.duration,
-      this.menuBoxDecoration,
-      this.menuItemExtent,
-      this.animateMenuItems,
-      this.blurSize,
-      this.blurBackgroundColor,
-      this.menuWidth,
-      this.bottomOffsetHeight,
-      this.menuOffset,
-      this.openWithTap = false})
-      : super(key: key);
+  const FocusedMenuHolder({
+    required this.menuItems,
+    required this.onPressed,
+    required this.child,
+    this.controller,
+    this.duration,
+    this.menuBoxDecoration,
+    this.menuItemExtent,
+    this.animateMenuItems,
+    this.blurSize,
+    this.blurBackgroundColor,
+    this.menuWidth,
+    this.bottomOffsetHeight,
+    this.menuOffset,
+    this.openWithTap = false,
+    this.enableMenuScroll = true,
+    Key? key,
+  }) : super(key: key);
 
   @override
-  _FocusedMenuHolderState createState() => _FocusedMenuHolderState();
+  _FocusedMenuHolderState createState() => _FocusedMenuHolderState(controller);
 }
 
 class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
+  FocusedMenuHolderController? _controller;
   GlobalKey containerKey = GlobalKey();
   Offset childOffset = Offset(0, 0);
   Size? childSize;
 
-  getOffset(){
-    RenderBox renderBox = containerKey.currentContext!.findRenderObject() as RenderBox;
+  _FocusedMenuHolderState(FocusedMenuHolderController? _controller) {
+    if (_controller != null) {
+      _controller._addState(this);
+    }
+  }
+
+  getOffset() {
+    RenderBox renderBox =
+        containerKey.currentContext!.findRenderObject() as RenderBox;
     Size size = renderBox.size;
     Offset offset = renderBox.localToGlobal(Offset.zero);
     setState(() {
@@ -61,7 +94,6 @@ class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
     return GestureDetector(
         key: containerKey,
         onTap: () async {
-          widget.onPressed();
           if (widget.openWithTap) {
             await openMenu(context);
           }
@@ -97,6 +129,7 @@ class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
                     animateMenu: widget.animateMenuItems ?? true,
                     bottomOffsetHeight: widget.bottomOffsetHeight ?? 0,
                     menuOffset: widget.menuOffset ?? 0,
+                    enableMenuScroll: widget.enableMenuScroll,
                   ));
             },
             fullscreenDialog: true,
@@ -117,22 +150,41 @@ class FocusedMenuDetails extends StatelessWidget {
   final Color? blurBackgroundColor;
   final double? bottomOffsetHeight;
   final double? menuOffset;
+  final bool? enableMenuScroll;
 
-  const FocusedMenuDetails(
-      {Key? key, required this.menuItems, required this.child, required this.childOffset, required this.childSize,required this.menuBoxDecoration, required this.itemExtent,required this.animateMenu,required this.blurSize,required this.blurBackgroundColor,required this.menuWidth, this.bottomOffsetHeight, this.menuOffset})
-      : super(key: key);
+  const FocusedMenuDetails({
+    required this.menuItems,
+    required this.child,
+    required this.childOffset,
+    required this.childSize,
+    required this.menuBoxDecoration,
+    required this.itemExtent,
+    required this.animateMenu,
+    required this.blurSize,
+    required this.blurBackgroundColor,
+    required this.menuWidth,
+    this.bottomOffsetHeight,
+    this.menuOffset,
+    this.enableMenuScroll = true,
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-
     final maxMenuHeight = size.height * 0.45;
     final listHeight = menuItems.length * (itemExtent ?? 50.0);
 
-    final maxMenuWidth = menuWidth??(size.width * 0.70);
+    final maxMenuWidth = menuWidth ?? (size.width * 0.70);
     final menuHeight = listHeight < maxMenuHeight ? listHeight : maxMenuHeight;
-    final leftOffset = (childOffset.dx+maxMenuWidth ) < size.width ? childOffset.dx: (childOffset.dx-maxMenuWidth+childSize!.width);
-    final topOffset = (childOffset.dy + menuHeight + childSize!.height) < size.height - bottomOffsetHeight! ? childOffset.dy + childSize!.height + menuOffset! : childOffset.dy - menuHeight - menuOffset!;
+    final leftOffset = (childOffset.dx + maxMenuWidth) < size.width
+        ? childOffset.dx
+        : (childOffset.dx - maxMenuWidth + childSize!.width);
+    final topOffset = (childOffset.dy + menuHeight + childSize!.height) <
+            size.height - bottomOffsetHeight!
+        ? childOffset.dy + childSize!.height + menuOffset!
+        : childOffset.dy - menuHeight - menuOffset!;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -144,9 +196,11 @@ class FocusedMenuDetails extends StatelessWidget {
                   Navigator.pop(context);
                 },
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: blurSize??4, sigmaY: blurSize??4),
+                  filter: ImageFilter.blur(
+                      sigmaX: blurSize ?? 4, sigmaY: blurSize ?? 4),
                   child: Container(
-                    color: (blurBackgroundColor??Colors.black).withOpacity(0.7),
+                    color:
+                        (blurBackgroundColor ?? Colors.black).withOpacity(0.7),
                   ),
                 )),
             Positioned(
@@ -168,38 +222,54 @@ class FocusedMenuDetails extends StatelessWidget {
                   decoration: menuBoxDecoration ??
                       BoxDecoration(
                           color: Colors.grey.shade200,
-                          borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                          boxShadow: [const BoxShadow(color: Colors.black38, blurRadius: 10, spreadRadius: 1)]),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(5.0)),
+                          boxShadow: [
+                            const BoxShadow(
+                                color: Colors.black38,
+                                blurRadius: 10,
+                                spreadRadius: 1)
+                          ]),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                     child: ListView.builder(
                       itemCount: menuItems.length,
                       padding: EdgeInsets.zero,
-                      physics: BouncingScrollPhysics(),
+                      physics: enableMenuScroll == true
+                          ? BouncingScrollPhysics()
+                          : NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         FocusedMenuItem item = menuItems[index];
-                        Widget listItem = GestureDetector(
-                            onTap:
-                                () {
-                              Navigator.pop(context);
-                              item.onPressed();
 
+                        Widget listItem = GestureDetector(
+                            onTap: () {
+                              if (item.onPressed == null) return;
+                              Navigator.pop(context);
+                              item.onPressed?.call();
                             },
                             child: Container(
-                                alignment: Alignment.center,
-                                margin: const EdgeInsets.only(bottom: 1),
-                                color: item.backgroundColor ?? Colors.white,
-                                height: itemExtent ?? 50.0,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 14),
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      item.title,
-                                      if (item.trailingIcon != null) ...[item.trailingIcon!]
+                              alignment: Alignment.center,
+                              margin: const EdgeInsets.only(bottom: 1),
+                              color: item.backgroundColor ?? Colors.white,
+                              height: itemExtent ?? 50.0,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8.0, horizontal: 14),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    if (item.leadingIcon != null) ...[
+                                      item.leadingIcon!
                                     ],
-                                  ),
-                                )));
+                                    item.title,
+                                    if (item.trailingIcon != null) ...[
+                                      item.trailingIcon!
+                                    ]
+                                  ],
+                                ),
+                              ),
+                            ));
                         if (animateMenu) {
                           return TweenAnimationBuilder(
                               builder: (context, dynamic value, child) {
@@ -221,10 +291,15 @@ class FocusedMenuDetails extends StatelessWidget {
                 ),
               ),
             ),
-            Positioned(top: childOffset.dy, left: childOffset.dx, child: AbsorbPointer(absorbing: true, child: Container(
-                width: childSize!.width,
-                height: childSize!.height,
-                child: child))),
+            Positioned(
+                top: childOffset.dy,
+                left: childOffset.dx,
+                child: AbsorbPointer(
+                    absorbing: true,
+                    child: Container(
+                        width: childSize!.width,
+                        height: childSize!.height,
+                        child: child))),
           ],
         ),
       ),
