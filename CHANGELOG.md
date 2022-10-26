@@ -1,3 +1,7 @@
+## [1.1.0] - October 26, 2022
+
+* Fix controller events.
+
 ## [1.0.1] - October 26, 2022
 
 * Add mouse cursor in web.
