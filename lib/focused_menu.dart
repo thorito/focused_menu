@@ -73,8 +73,8 @@ class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
   Size? childSize;
 
   _FocusedMenuHolderState(FocusedMenuHolderController? _controller) {
-    if (_controller != null) {
-      _controller._addState(this);
+    if (this._controller != null) {
+      this._controller!._addState(this);
     }
   }
 
@@ -232,60 +232,68 @@ class FocusedMenuDetails extends StatelessWidget {
                           ]),
                   child: ClipRRect(
                     borderRadius: const BorderRadius.all(Radius.circular(5.0)),
-                    child: ListView.builder(
-                      itemCount: menuItems.length,
-                      padding: EdgeInsets.zero,
-                      physics: enableMenuScroll == true
-                          ? BouncingScrollPhysics()
-                          : NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        FocusedMenuItem item = menuItems[index];
+                    child: InkWell(
+                      mouseCursor: SystemMouseCursors.click,
+                      child: ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context)
+                            .copyWith(scrollbars: enableMenuScroll),
+                        child: ListView.builder(
+                          itemCount: menuItems.length,
+                          padding: EdgeInsets.zero,
+                          physics: enableMenuScroll == true
+                              ? BouncingScrollPhysics()
+                              : NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            FocusedMenuItem item = menuItems[index];
 
-                        Widget listItem = GestureDetector(
-                            onTap: () {
-                              if (item.onPressed == null) return;
-                              Navigator.pop(context);
-                              item.onPressed?.call();
-                            },
-                            child: Container(
-                              alignment: Alignment.center,
-                              margin: const EdgeInsets.only(bottom: 1),
-                              color: item.backgroundColor ?? Colors.white,
-                              height: itemExtent ?? 50.0,
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8.0, horizontal: 14),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    if (item.leadingIcon != null) ...[
-                                      item.leadingIcon!
-                                    ],
-                                    item.title,
-                                    if (item.trailingIcon != null) ...[
-                                      item.trailingIcon!
-                                    ]
-                                  ],
-                                ),
-                              ),
-                            ));
-                        if (animateMenu) {
-                          return TweenAnimationBuilder(
-                              builder: (context, dynamic value, child) {
-                                return Transform(
-                                  transform: Matrix4.rotationX(1.5708 * value),
-                                  alignment: Alignment.bottomCenter,
-                                  child: child,
-                                );
-                              },
-                              tween: Tween(begin: 1.0, end: 0.0),
-                              duration: Duration(milliseconds: index * 200),
-                              child: listItem);
-                        } else {
-                          return listItem;
-                        }
-                      },
+                            Widget listItem = GestureDetector(
+                                onTap: () {
+                                  if (item.onPressed == null) return;
+                                  Navigator.pop(context);
+                                  item.onPressed?.call();
+                                },
+                                child: Container(
+                                  alignment: Alignment.center,
+                                  margin: const EdgeInsets.only(bottom: 1),
+                                  color: item.backgroundColor ?? Colors.white,
+                                  height: itemExtent ?? 50.0,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0, horizontal: 14),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        if (item.leadingIcon != null) ...[
+                                          item.leadingIcon!
+                                        ],
+                                        item.title,
+                                        if (item.trailingIcon != null) ...[
+                                          item.trailingIcon!
+                                        ]
+                                      ],
+                                    ),
+                                  ),
+                                ));
+                            if (animateMenu) {
+                              return TweenAnimationBuilder(
+                                  builder: (context, dynamic value, child) {
+                                    return Transform(
+                                      transform:
+                                          Matrix4.rotationX(1.5708 * value),
+                                      alignment: Alignment.bottomCenter,
+                                      child: child,
+                                    );
+                                  },
+                                  tween: Tween(begin: 1.0, end: 0.0),
+                                  duration: Duration(milliseconds: index * 200),
+                                  child: listItem);
+                            } else {
+                              return listItem;
+                            }
+                          },
+                        ),
+                      ),
                     ),
                   ),
                 ),
