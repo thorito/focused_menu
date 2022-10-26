@@ -1,3 +1,8 @@
+## [1.0.1] - October 26, 2022
+
+* Add mouse cursor in web.
+* Disable scrollbar if disabled 'enableMenuScroll'
+
 ## [1.0.0] - October 21, 2022
 
 * Added controller to open and close.
