@@ -1,3 +1,7 @@
+## [1.1.1] - November 2, 2022
+
+* Add example.
+
 ## [1.1.0] - October 26, 2022
 
 * Fix controller events.
