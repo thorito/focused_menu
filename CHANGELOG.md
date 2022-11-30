@@ -1,3 +1,8 @@
+## [1.2.0] - November 30, 2022
+
+* Added actions for interaction with tvbox.
+* Added default action and border in FocusedMenuDetails.
+
 ## [1.1.1] - November 2, 2022
 
 * Add example.

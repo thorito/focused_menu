@@ -6,6 +6,7 @@ class FocusedMenuItem {
   Icon? leadingIcon;
   Icon? trailingIcon;
   VoidCallback? onPressed;
+  bool? isDefaultAction;
 
   FocusedMenuItem({
     required this.title,
@@ -13,5 +14,6 @@ class FocusedMenuItem {
     this.leadingIcon,
     this.trailingIcon,
     this.onPressed,
+    this.isDefaultAction = false,
   });
 }
