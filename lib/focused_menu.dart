@@ -3,6 +3,7 @@ library focused_menu;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:focused_menu_custom/modals.dart';
 
 class FocusedMenuHolderController {
@@ -18,6 +19,7 @@ class FocusedMenuHolderController {
     if (!_isOpened) {
       _isOpened = true;
       await _widgetState.openMenu(_widgetState.context);
+      HapticFeedback.vibrate();
     }
   }
 
@@ -91,8 +93,7 @@ class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
   }
 
   getOffset() {
-    RenderBox renderBox =
-        containerKey.currentContext!.findRenderObject() as RenderBox;
+    RenderBox renderBox = containerKey.currentContext!.findRenderObject() as RenderBox;
     Size size = renderBox.size;
     Offset offset = renderBox.localToGlobal(Offset.zero);
     setState(() {
@@ -118,6 +119,7 @@ class _FocusedMenuHolderState extends State<FocusedMenuHolder> {
         },
         onLongPress: () async {
           if (!widget.openWithTap) {
+            HapticFeedback.vibrate();
             await openMenu(context);
           }
         },
@@ -248,10 +250,8 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
   @override
   void initState() {
     _firstItem = widget.menuItems.indexWhere((item) => item.onPressed != null);
-    _lastItem =
-        widget.menuItems.lastIndexWhere((item) => item.onPressed != null);
-    _indexSelected =
-        widget.menuItems.indexWhere((item) => item.isDefaultAction == true);
+    _lastItem = widget.menuItems.lastIndexWhere((item) => item.onPressed != null);
+    _indexSelected = widget.menuItems.indexWhere((item) => item.isDefaultAction == true);
 
     if (_indexSelected == -1 && _firstItem != -1) {
       _indexSelected = _firstItem;
@@ -272,10 +272,7 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
     final leftOffset = (widget.childOffset.dx + maxMenuWidth) < size.width
         ? widget.childOffset.dx
         : (widget.childOffset.dx - maxMenuWidth + widget.childSize!.width);
-    final topOffset = (widget.childOffset.dy +
-                menuHeight +
-                widget.childSize!.height) <
-            size.height - widget.bottomOffsetHeight!
+    final topOffset = (widget.childOffset.dy + menuHeight + widget.childSize!.height) < size.height - widget.bottomOffsetHeight!
         ? widget.childOffset.dy + widget.childSize!.height + widget.menuOffset!
         : widget.childOffset.dy - menuHeight - widget.menuOffset!;
 
@@ -295,12 +292,9 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
                     _exit(context);
                   },
                   child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                        sigmaX: widget.blurSize ?? 4,
-                        sigmaY: widget.blurSize ?? 4),
+                    filter: ImageFilter.blur(sigmaX: widget.blurSize ?? 4, sigmaY: widget.blurSize ?? 4),
                     child: Container(
-                      color: (widget.blurBackgroundColor ?? Colors.black)
-                          .withOpacity(0.7),
+                      color: (widget.blurBackgroundColor ?? Colors.black).withOpacity(0.7),
                     ),
                   )),
               Positioned(
@@ -308,8 +302,7 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
                 left: leftOffset,
                 child: TweenAnimationBuilder(
                   duration: Duration(milliseconds: 200),
-                  builder:
-                      (BuildContext context, dynamic value, Widget? child) {
+                  builder: (BuildContext context, dynamic value, Widget? child) {
                     return Transform.scale(
                       scale: value,
                       alignment: Alignment.center,
@@ -323,33 +316,22 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
                     decoration: widget.menuBoxDecoration ??
                         BoxDecoration(
                             color: Colors.transparent,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(5)),
-                            boxShadow: [
-                              const BoxShadow(
-                                  color: Colors.black38,
-                                  blurRadius: 5,
-                                  spreadRadius: 1)
-                            ]),
+                            borderRadius: const BorderRadius.all(Radius.circular(10)),
+                            boxShadow: [const BoxShadow(color: Colors.black38, blurRadius: 5, spreadRadius: 1)]),
                     child: ClipRRect(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(5.0)),
+                      borderRadius: const BorderRadius.all(Radius.circular(5.0)),
                       child: FocusableActionDetector(
                         mouseCursor: SystemMouseCursors.click,
                         autofocus: true,
                         actions: {
-                          ActivateIntent:
-                              CallbackAction<Intent>(onInvoke: (intent) async {
+                          ActivateIntent: CallbackAction<Intent>(onInvoke: (intent) async {
                             _exit(context);
                             if (_indexSelected != -1) {
-                              widget.menuItems[_indexSelected].onPressed
-                                  ?.call();
+                              widget.menuItems[_indexSelected].onPressed?.call();
                             }
                             return intent;
                           }),
-                          DirectionalFocusIntent:
-                              CallbackAction<DirectionalFocusIntent>(
-                                  onInvoke: (intent) async {
+                          DirectionalFocusIntent: CallbackAction<DirectionalFocusIntent>(onInvoke: (intent) async {
                             switch (intent.direction) {
                               case TraversalDirection.up:
                               case TraversalDirection.left:
@@ -365,16 +347,13 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
                           }),
                         },
                         child: ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(context)
-                              .copyWith(scrollbars: widget.enableMenuScroll),
+                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: widget.enableMenuScroll),
                           child: Material(
                             type: MaterialType.transparency,
                             child: ListView.builder(
                               itemCount: widget.menuItems.length,
                               padding: EdgeInsets.zero,
-                              physics: widget.enableMenuScroll == true
-                                  ? BouncingScrollPhysics()
-                                  : NeverScrollableScrollPhysics(),
+                              physics: widget.enableMenuScroll == true ? BouncingScrollPhysics() : NeverScrollableScrollPhysics(),
                               itemBuilder: (context, index) {
                                 FocusedMenuItem item = widget.menuItems[index];
                                 return Material(
@@ -385,25 +364,18 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
                                       item.onPressed?.call();
                                     },
                                     child: Container(
-                                      decoration:
-                                          _buildBoxDecoration(item, index),
+                                      decoration: _buildBoxDecoration(item, index),
                                       alignment: Alignment.center,
                                       margin: const EdgeInsets.only(bottom: 0),
                                       height: widget.itemExtent ?? 50,
                                       child: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8, horizontal: 14),
+                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
                                         child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: <Widget>[
-                                            if (item.leadingIcon != null) ...[
-                                              item.leadingIcon!
-                                            ],
+                                            if (item.leadingIcon != null) ...[item.leadingIcon!],
                                             item.title,
-                                            if (item.trailingIcon != null) ...[
-                                              item.trailingIcon!
-                                            ]
+                                            if (item.trailingIcon != null) ...[item.trailingIcon!]
                                           ],
                                         ),
                                       ),
@@ -429,16 +401,10 @@ class _FocusedMenuDetailsState extends State<FocusedMenuDetails> {
   BoxDecoration _buildBoxDecoration(FocusedMenuItem item, int index) {
     return BoxDecoration(
         color: item.backgroundColor ?? Colors.white,
-        border: index == _indexSelected
-            ? Border.all(
-                color: widget.borderColor ?? Colors.white,
-                width: widget.widthBorder)
-            : null);
+        border: index == _indexSelected ? Border.all(color: widget.borderColor ?? Colors.white, width: widget.widthBorder) : null);
   }
 
   void _exit(BuildContext context) {
-    widget.controller != null
-        ? widget.controller?.dispose()
-        : Navigator.pop(context);
+    widget.controller != null ? widget.controller?.dispose() : Navigator.pop(context);
   }
 }
