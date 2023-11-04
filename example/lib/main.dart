@@ -59,31 +59,15 @@ class MyHomePage extends StatelessWidget {
                 height: 10,
               ),
               TextField(
-                decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: "Look for your Interest!",
-                    fillColor: Colors.grey.shade200,
-                    filled: true),
+                decoration:
+                    InputDecoration(border: InputBorder.none, hintText: "Look for your Interest!", fillColor: Colors.grey.shade200, filled: true),
               ),
               SizedBox(
                 height: 10,
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  DropdownButton(
-                      style: TextStyle(fontSize: 15, color: Colors.black),
-                      icon: Icon(Icons.keyboard_arrow_down),
-                      underline: Container(
-                        color: Colors.white,
-                      ),
-                      items: ["Featured", "Most Rated", "Recent", "Popular"]
-                          .map<DropdownMenuItem>(
-                              (e) => DropdownMenuItem(child: Text(e)))
-                          .toList(),
-                      onChanged: (newItem) {}),
-                  IconButton(icon: Icon(Icons.sort), onPressed: () {})
-                ],
+                children: <Widget>[IconButton(icon: Icon(Icons.sort), onPressed: () {})],
               ),
               SizedBox(
                 height: 10,
@@ -91,40 +75,27 @@ class MyHomePage extends StatelessWidget {
               Expanded(
                 child: GridView(
                   physics: BouncingScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
                   children: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
                       .map((e) => FocusedMenuHolder(
                             menuWidth: MediaQuery.of(context).size.width * 0.50,
                             blurSize: 5.0,
                             menuItemExtent: 45,
-                            menuBoxDecoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(15.0))),
+                            menuBoxDecoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.all(Radius.circular(15.0))),
                             duration: Duration(milliseconds: 100),
                             animateMenuItems: true,
                             blurBackgroundColor: Colors.black54,
                             bottomOffsetHeight: 100,
-                            openWithTap: true,
+                            openWithTap: false,
                             menuItems: <FocusedMenuItem>[
                               FocusedMenuItem(
                                   title: Text("Open"),
                                   trailingIcon: Icon(Icons.open_in_new),
                                   onPressed: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => ScreenTwo()));
+                                    Navigator.push(context, MaterialPageRoute(builder: (context) => ScreenTwo()));
                                   }),
-                              FocusedMenuItem(
-                                  title: Text("Share"),
-                                  trailingIcon: Icon(Icons.share),
-                                  onPressed: () {}),
-                              FocusedMenuItem(
-                                  title: Text("Favorite"),
-                                  trailingIcon: Icon(Icons.favorite_border),
-                                  onPressed: () {}),
+                              FocusedMenuItem(title: Text("Share"), trailingIcon: Icon(Icons.share), onPressed: () {}),
+                              FocusedMenuItem(title: Text("Favorite"), trailingIcon: Icon(Icons.favorite_border), onPressed: () {}),
                               FocusedMenuItem(
                                   title: Text(
                                     "Delete",
@@ -151,8 +122,7 @@ class MyHomePage extends StatelessWidget {
             ],
           ),
         )),
-        bottomNavigationBar:
-            BottomNavigationBar(items: <BottomNavigationBarItem>[
+        bottomNavigationBar: BottomNavigationBar(items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.add), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: "Menu 2"),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: "Menu 3"),
